@@ -45,9 +45,95 @@ app.get('/api/genre/:genre', (req, res) => {
     });
 });
 
+app.get('/api/genrelist/:genres', async (req, res) => {
+    const genres = req.params.genres.split('&&');
+    
+    const query_1 = `q=genre:"${genres[0]}"&type=artist`;
+    const query_2 = `q=genre:"${genres[1]}"&type=artist`;
+    const query_3 = `q=genre:"${genres[2]}"&type=artist`;
+
+    const [one, two, three] = 
+        await Promise.all([getGenreArtists(query_1), getGenreArtists(query_2), getGenreArtists(query_3)]);
+        
+    const artists = [...one, ...two, ...three];
+    console.log('alllll', artists)
+    res.send(artists);
+    // const results_1 = getGenreArtists(query_1);
+    // const results_2 = getGenreArtists(query_2);
+    // const results_3 = getGenreArtists(query_3);
+    // const results_2 = genres[1] ? getGenreArtists(query_2) : [];
+    // const results_3 = genres[2] ? getGenreArtists(query_3) : [];
+    // results_1.then( response => {
+    //     console.log('results 1', response);
+    //     res.send(response);
+        
+    // });
+    // results_1.then((response) => {
+    //     // console.log('results 1', response)
+    //     res.write(response);
+    // });
+    // results_2.then((response) => {
+    //     // console.log('results 1', response)
+    //     res.write(response);
+    // });
+    // results_3.then((response) => {
+    //     // console.log('results 1', response)
+    //     res.write(response);
+    // });
+
+    // res.end();
+    // console.log('results 2', results_2);
+    // console.log('results 3', results_3);
 
 
+    // const address = fetch("https://jsonplaceholder.typicode.com/users/1")
+    //     .then((response) => response.json())
+    //     .then((user) => {
+    //         return user.address;
+    //     });
 
+    // const printAddress = async () => {
+    //     const a = await address;
+    //     console.log(a);
+    // };
+
+    // printAddress();
+
+
+    // res.send(results_1);
+
+});
+
+function getGenreArtists(query) {
+    const getAuth = getAccessToken();
+
+    return getAuth.then((token) => {
+        const getOptions = {
+            method: 'GET',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': 'Bearer ' + token
+            },
+            url: 'https://api.spotify.com/v1/search?' + query,
+        }
+        return axios(getOptions)
+            .then((response) => {
+                const artistsList = response.data.artists.items;
+                // console.log('artist list', artistsList);
+                return artistsList;
+            })
+            .catch((err) => {
+                if (err.repsonse) {
+                    console.log('Error in Search Response');
+                } else if (err.request) {
+                    console.log('Error in Search Request');
+                } else {
+                    console.log('Error retrieving search result');
+                }
+            });
+    });
+}
 
 // router.get('/artist/:artistname', function(req, res, next) {
 
