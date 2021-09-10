@@ -1,5 +1,5 @@
 import  React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Alert } from 'react-bootstrap';
+import { Container, Row, Col, Alert, Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
 import Search from '../components/Search.jsx';
@@ -9,11 +9,31 @@ import Selected from '../components/Selected.jsx';
 
 export default function Genres(props) {
     const [ genresList, setGenresList ] = useState([]);
-    const [ selected, setSelected ] = useState([]);
+    const [ selectedGenres, setSelectedGenres ] = useState([]);
     const [ error, setError ] = useState('');
 
     const [ genreSearch, setGenreSearch ] = useState('');
     const [ searchError, setSearchError ] = useState('');
+
+    const [ results, setResults ] = useState([]);
+
+    const Results = () => {
+        const divs = results.map(item => {
+            return (
+                <li>
+                    <Row>
+                        <p>Artist Name: {item.name}</p>
+                        <p>Followers: {item.followers.total}</p>
+                    </Row>
+                </li>
+            );
+        })
+        return (
+            <ul>
+                {divs}
+            </ul>
+        )
+    }
 
     const handleSearchChange = (event) => {
         setGenreSearch(event.target.value);
@@ -45,10 +65,10 @@ export default function Genres(props) {
 
     const makeSelection = (event) => {
         event.preventDefault();
-        if (selected.length > 2) {
+        if (selectedGenres.length > 2) {
             setError('Unable to select more than three genres!');
         } else {
-            setSelected([...selected, event.target.textContent]);
+            setSelectedGenres([...selectedGenres, event.target.textContent]);
             setGenresList([]);
             setGenreSearch('');
         }
@@ -56,15 +76,26 @@ export default function Genres(props) {
 
     const removeSelection = (event) => {
         const toRemove = event.target.textContent;
-        const updatedSelection = selected.filter(x => x !== toRemove);
-        setSelected(updatedSelection);
+        const updatedSelection = selectedGenres.filter(x => x !== toRemove);
+        setSelectedGenres(updatedSelection);
+    };
+
+    const displayResults = () => {
+        const queryString = selectedGenres.join('&&');
+        fetch(`/api/genrelist/${queryString}`)
+            .then(res => res.json())
+            .then(res => {
+                const artists = res;
+                console.log('the artists', artists);
+                setResults(artists);
+            });
     };
 
     return (
         <Container>
             <Row>
                 <Col>
-                    <Selected selection={selected} onClose={removeSelection} />
+                    <Selected selection={selectedGenres} onClose={removeSelection} />
                 </Col>
             </Row>
             <Row>
@@ -79,8 +110,13 @@ export default function Genres(props) {
                     { genresList && <SearchResults itemList={genresList} onClick={makeSelection} /> }
                 </Col>
             </Row>
-            
-            <Link to="/map">Map</Link>
+            <Button onClick={displayResults}>
+                Display results!
+            </Button>
+            <Link to="/map">Show results on a map!</Link>
+
+            { results && <Results />}
+
         </Container>
     );  
 }
