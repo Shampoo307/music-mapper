@@ -177,51 +177,50 @@ function getGenreArtists(query) {
     });
 }
 
-// router.get('/artist/:artistname', function(req, res, next) {
-
-//     const artistname = req.params.artistname;
-//     const query = `q=${artistname}&type=artist`;
+app.get('/artist/:artistname', function(req, res) {
+    console.log('req aparms', req.params);
+    const artistname = req.params.artistname;
+    const query = `q=${artistname}&type=artist`;
     
-//     const getAuth = getAccessToken();
+    const getAuth = getAccessToken();
 
-//     getAuth.then((token) => {
-//         const getOptions = {
-//             method: 'GET',
-//             headers: { 
-//                 'Content-Type': 'application/json',
-//                 'Accept': 'application/json',
-//                 'Authorization': 'Bearer ' + token
-//             },
-//             url: 'https://api.spotify.com/v1/search?' + query,
-//         }
-//         axios(getOptions)
-//             .then((response) => {
-//                 // displaySearch(response.data);
-//                 const artists = response.data.artists.items;
-//                 artists.forEach(item => console.log('images', item.images[0]));
-//                 return artists.map(artist => {
-//                     return {
-//                         name: artist.name,
-//                         image: artist?.images[0]?.url ?? "",
-//                         id: artist.id
-//                     }
-//                 });
-//             })
-//             .then((data) => {
-//                 res.render('music', { artists: data });
-//             })
-//             .catch((err) => {
-//                 if (err.repsonse) {
-//                     console.log('Error in Search Response');
-//                 } else if (err.request) {
-//                     console.log('Error in Search Request');
-//                 } else {
-//                     console.log('Error retrieving search result');
-//                 }
-//             });
-//     });
+    getAuth.then((token) => {
+        const getOptions = {
+            method: 'GET',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': 'Bearer ' + token
+            },
+            url: 'https://api.spotify.com/v1/search?' + query,
+        }
+        axios(getOptions)
+            .then((response) => {
+                // displaySearch(response.data);
+                const artists = response.data.artists.items;
+                console.log('artists', artists);
+                artists.forEach(item => console.log('images', item.images[0]));
+                const artistInfo = artists.map(artist => {
+                    return {
+                        name: artist.name,
+                        image: artist?.images[0]?.url ?? "",
+                        id: artist.id
+                    }
+                });
+                res.send(artistsInfo);
+            })
+            .catch((err) => {
+                if (err.repsonse) {
+                    console.log('Error in Search Response');
+                } else if (err.request) {
+                    console.log('Error in Search Request');
+                } else {
+                    console.log('Error retrieving search result');
+                }
+            });
+    });
 
-// });
+});
 
 
 async function getAccessToken() {
