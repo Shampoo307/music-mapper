@@ -1,6 +1,6 @@
 import  React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Container } from 'react-bootstrap';
+import { Container, Button } from 'react-bootstrap';
 
 import Genres from './Genres.jsx';
 import Artists from './Artists.jsx';
@@ -12,7 +12,14 @@ import Artists from './Artists.jsx';
 
 
 export default function Form(props) {
-    const [ view, setView ] = useState('genres');
+    const [ view, setView ] = useState(true);
+
+    const setViewGenre = () => {
+        setView(true)
+    }
+    const setViewArtist = () => {
+        setView(false)
+    }
 
     return (
         <main className="form">
@@ -23,11 +30,21 @@ export default function Form(props) {
                 <p>or</p>
                 <p>Search for an artist and see the regions with the most artists similar to the one you searched for</p>
                 
-                <h2>Search by Genres</h2>
-                <h2>Search by Artists</h2>
+                <Button
+                    onClick={setViewGenre}
+                    className="form-view-button"
+                >
+                    Search by Genres
+                </Button>
+                <Button 
+                    onClick={setViewArtist}
+                    className="form-view-button"
+                >
+                    Search by Artists
+                </Button>
                 <Container>
-                { view === 'genres' && <Genres /> }
-                { view === 'artists' && <Artists /> }
+                { view && <Genres /> }
+                { !view && <Artists /> }
                 </Container>
 
                 <Link to="/map">Map</Link>
