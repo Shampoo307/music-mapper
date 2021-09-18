@@ -9,14 +9,14 @@ export default function Search(props) {
             <Form onSubmit={props.handleSearch}>
                 { props.error && <p className="errorMsg">{props.error}</p>}
                 <Form.Group>
-                    <Form.Label>Search for a genre</Form.Label>
+                    <Form.Label>{props.searchText}</Form.Label>
                     <Row>
                         <Col>
                             <Form.Control
                                 type="search"
                                 name="searchTerm"
                                 value={props.search}
-                                placeholder="Search for a genre"
+                                placeholder={props.searchText}
                                 onChange={props.handleChange}
                                 autoComplete="off"
                             />
