@@ -4,11 +4,13 @@ const app = express();
 const port = 3000;
 const axios = require('axios');
 const qs = require('qs');
+const { response } = require('express');
 
 require('dotenv').config();
 
 app.use(express.static('../client/build'));
 
+// Search for a genre
 app.get('/api/genre/:genre', (req, res) => {
     const genrename = req.params.genre;
     const query = `q=genre:"${genrename}"&type=artist`;
@@ -24,6 +26,7 @@ app.get('/api/genre/:genre', (req, res) => {
             },
             url: 'https://api.spotify.com/v1/search?' + query,
         }
+        // Get results from spotify
         axios(getOptions)
             .then((response) => {
                 const artists = response.data.artists.items;
@@ -45,6 +48,7 @@ app.get('/api/genre/:genre', (req, res) => {
     });
 });
 
+// Get artists of given genres
 app.get('/api/genrelist/:genres', async (req, res) => {
     const genres = req.params.genres.split('&&');
     
@@ -52,57 +56,96 @@ app.get('/api/genrelist/:genres', async (req, res) => {
     const query_2 = `q=genre:"${genres[1]}"&type=artist`;
     const query_3 = `q=genre:"${genres[2]}"&type=artist`;
 
+    // get genre artists from spotify API
     const [one, two, three] = 
         await Promise.all([getGenreArtists(query_1), getGenreArtists(query_2), getGenreArtists(query_3)]);
-        
     const artists = [...one, ...two, ...three];
-    console.log('alllll', artists)
-    res.send(artists);
-    // const results_1 = getGenreArtists(query_1);
-    // const results_2 = getGenreArtists(query_2);
-    // const results_3 = getGenreArtists(query_3);
-    // const results_2 = genres[1] ? getGenreArtists(query_2) : [];
-    // const results_3 = genres[2] ? getGenreArtists(query_3) : [];
-    // results_1.then( response => {
-    //     console.log('results 1', response);
-    //     res.send(response);
-        
-    // });
-    // results_1.then((response) => {
-    //     // console.log('results 1', response)
-    //     res.write(response);
-    // });
-    // results_2.then((response) => {
-    //     // console.log('results 1', response)
-    //     res.write(response);
-    // });
-    // results_3.then((response) => {
-    //     // console.log('results 1', response)
-    //     res.write(response);
-    // });
 
-    // res.end();
-    // console.log('results 2', results_2);
-    // console.log('results 3', results_3);
+    // get artist info from musicbrainz API
+    const artistsInfo = await Promise.all(
+        artists.map(async (artist) => {
+            const artistInfo = await searchArtistInfo(artist.name);
+            
+            const beginarea = artistInfo['begin-area']?.name ?? "";
+            const area = artistInfo?.area?.name ?? "";
 
+            let location;
+            if (beginarea === "") {
+                location = area;
+            } else if (area !== "") {
+                location = beginarea + ", " + area;
+            }
+            return {
+                spotify: artist,
+                musicbrainz: artistInfo,
+                location: location
+            };
+        })
+    );
+    
+    // get geolocations
+    const artistsWithLatLongs = await Promise.all(
+        artistsInfo.map(async (artist) => {
+            const location = artist.location;
+            const latlong = 
+                location
+                ? await retrieveLatLong(location)
+                : { lat: 0, lng: 0 };
+            return {
+                ...artist,
+                latlng: latlong
+            };
+        })
+    );
 
-    // const address = fetch("https://jsonplaceholder.typicode.com/users/1")
-    //     .then((response) => response.json())
-    //     .then((user) => {
-    //         return user.address;
-    //     });
-
-    // const printAddress = async () => {
-    //     const a = await address;
-    //     console.log(a);
-    // };
-
-    // printAddress();
-
-
-    // res.send(results_1);
-
+    res.send(artistsWithLatLongs);
 });
+
+function retrieveLatLong(address) {
+    console.log('address', address);
+    const maps_key = process.env.MAPS_KEY;
+    const getOptions = {
+        method: 'GET',
+        headers: { 
+            'User-Agent': 'MusicMapper/0.1.0 ( tc99@live.com.au, n9960783@qut.edu.au )',
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+        },
+        url: `https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${maps_key}`,
+    }
+    return axios(getOptions)
+        .then(res => {
+            const latlng = res?.data?.results[0]?.geometry?.location ?? { lat: 0, lng: 0 };
+            return latlng;
+        });
+}
+
+function searchArtistInfo(artist) {
+    const ARTISTNAME = artist;
+    const getOptions = {
+        method: 'GET',
+        headers: { 
+            'User-Agent': 'MusicMapper/0.1.0 ( tc99@live.com.au, n9960783@qut.edu.au )',
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+        },
+        url: `https://musicbrainz.org/ws/2/artist/?query=artist:${artist}&limit=3&fmt=json&dismax=true`,
+    }
+    return axios(getOptions)
+        .then((res) => {
+            if (ARTISTNAME === 'Frédéric Chopin') {
+                console.log('NAME IS CHOPIN???', ARTISTNAME);
+                console.log('URL', getOptions.url);
+                console.log('CHOPIN RESULTS', res.data.artists);
+            }
+            const highestScore = Math.max.apply(Math, res.data.artists.map(artist => {return artist.score}));
+            const artist = res.data.artists.filter(artist => artist.score === highestScore);
+            return artist[0];
+        })
+        .catch(err => {
+            console.log('Error in searchArtistInfo!', err);
+        });
+}
 
 function getGenreArtists(query) {
     const getAuth = getAccessToken();
@@ -115,12 +158,11 @@ function getGenreArtists(query) {
                 'Accept': 'application/json',
                 'Authorization': 'Bearer ' + token
             },
-            url: 'https://api.spotify.com/v1/search?' + query,
+            url: 'https://api.spotify.com/v1/search?' + query + '&limit=4',
         }
         return axios(getOptions)
             .then((response) => {
                 const artistsList = response.data.artists.items;
-                // console.log('artist list', artistsList);
                 return artistsList;
             })
             .catch((err) => {
@@ -180,25 +222,6 @@ function getGenreArtists(query) {
 //     });
 
 // });
-
-// function selectArtist(artist) {
-//     console.log('artist selected', artist);
-// }
-
-// function displaySearch(data) {
-//     const artists = data.artists.items;
-//     console.log('artists: ', artists);
-//     const artistNames = artists.map(artist => { return artist.name });
-//     rend
-// }
-
-
-
-
-
-
-
-
 
 
 async function getAccessToken() {
