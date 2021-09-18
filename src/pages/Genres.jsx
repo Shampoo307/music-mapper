@@ -118,6 +118,7 @@ export default function Genres(props) {
                     <Search 
                         handleChange={handleSearchChange}
                         handleSearch={handleSearch}
+                        searchText="Search for a genre"
                         search={genreSearch}
                         error={searchError}
                     />

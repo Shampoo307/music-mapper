@@ -4,6 +4,30 @@ import { GoogleMap, LoadScript, InfoWindow, Marker } from '@react-google-maps/ap
 import { useParams, useLocation } from 'react-router';
 import { parse } from 'qs';
 
+
+const ArtistInfo = (props) => {
+    const artist = props.artist;
+    // console.log('ARTIST INFO PROPS', props);
+    console.log('ARTIST PROPS ARTIST', artist);
+    return (
+        <div>
+            <h2>{artist.info.name}</h2>
+            <h4>{artist.info.lifespan?.begin ?? "N/A"} - {artist.info.lifespan?.ended ?? "N/A"}</h4>
+            <h4>Spotify Followers: {artist.info.followers}</h4>
+            <iframe 
+                title={artist.info.followers}
+                src={artist.info.embed}
+                width="300"
+                height="80" 
+                frameborder="0"
+                allowtransparency="true"
+                allow="encrypted-media"></iframe>
+        </div>
+    );
+}
+
+
+
 function MapContainer() {
     const [ markers, setMarkers ] = useState([]);
     const [ activeMarker, setActiveMarker ] = useState(null);
@@ -25,28 +49,48 @@ function MapContainer() {
             return artists;
         })
         // Make markers from artist results
-        .then((artists) => {
+        .then((res) => {
+            const allArtists = res;
             // get distinct list of coords
+            const distinctCoords = [...new Set(allArtists.map(artist => artist.latlng))];
+            const markers = distinctCoords.map((coords, index) => {
+                // get artists with same latlng
+                const dupeArtists = allArtists.filter(artist => artist.latlng.lat === coords.lat && artist.latlng.lng === coords.lng);
+                
+                let markerInfo;
 
-            // for each distinct pair of coords,
-            // return the artist obj
-            // 
-            const markers = artists.map((artist, index) => {
-                const embedurl = artist.spotify.external_urls.spotify.replace('.com/', '.com/embed/')
-                const info = {
-                    name: artist.spotify.name,
-                    followers: artist.spotify.followers.total,
-                    embed: embedurl,
-                    lifespan: artist?.musicbrainz['life-span'],
+                // if multiple artists with same coords
+                if (dupeArtists?.length !== undefined) {
+                    markerInfo = dupeArtists.map(artist => {
+                        // get array of individual artist info
+                            const embedurl = artist.spotify.external_urls.spotify.replace('.com/', '.com/embed/')
+                            const info = {
+                                name: artist.spotify.name,
+                                followers: artist.spotify.followers.total,
+                                embed: embedurl,
+                                lifespan: artist?.musicbrainz['life-span'],
+                            }
+                            return {
+                                // id: index,
+                                name: artist.name,
+                                // position: artist.latlng,
+                                info: info
+                            };
+                    });
+                } else {
+                    // else return single artist's info in array
+                    markerInfo = [{
+                        name: dupeArtists.name,
+                        info: dupeArtists.info
+                    }];
                 }
+
                 return {
                     id: index,
-                    name: artist.location,
-                    position: artist.latlng,
-                    info: info
+                    position: coords,
+                    artists: markerInfo
                 }
             });
-            // check if any 
             setMarkers(markers);
         });
     }, [queryString]);
@@ -97,17 +141,11 @@ function MapContainer() {
                             {activeMarker === props.id ? (
                                 <InfoWindow onCloseClick={() => setActiveMarker(null)}>
                                     <div>
-                                        <h2>{props.info.name}</h2>
-                                        <h4>{props.info.lifespan?.begin ?? "N/A"} - {props.info.lifespan?.ended ?? "N/A"}</h4>
-                                        <h4>Spotify Followers: {props.info.followers}</h4>
-                                        <iframe 
-                                            title={props.id}
-                                            src={props.info.embed}
-                                            width="300"
-                                            height="80" 
-                                            frameborder="0"
-                                            allowtransparency="true"
-                                            allow="encrypted-media"></iframe>
+                                        {props.artists.map(artist => {
+                                            return (
+                                                <ArtistInfo artist={artist} />
+                                            )
+                                        })}
                                     </div>
                                 </InfoWindow>
                             ) : null}
