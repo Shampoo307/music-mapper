@@ -5,7 +5,8 @@ import './App.css';
 
 
 import Form from "./pages/Form";
-import Map from "./pages/Map";
+import GenreMap from "./pages/GenreMap";
+import ArtistMap from "./pages/ArtistMap";
 
 function App() {
   return (
@@ -15,8 +16,11 @@ function App() {
                 <Route exact path="/">
                     <Form/>
                 </Route>
-				<Route exact path="/map">
-                    <Map/>
+				<Route exact path="/map/genre">
+                    <GenreMap/>
+                </Route>
+                <Route exact path="/map/artist">
+                    <ArtistMap/>
                 </Route>
             </Switch>            
         </div>
