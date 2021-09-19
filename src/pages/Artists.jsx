@@ -3,31 +3,31 @@ import { Link } from 'react-router-dom';
 import { Container, Row, Col, Alert, Button } from 'react-bootstrap';
 
 import Search from '../components/Search.jsx';
-import SearchResults from '../components/SearchResults.jsx';
+import SearchResultArtist from '../components/SearchResultArtist.jsx';
 import Selected from '../components/Selected.jsx';
 
 
 export default function Artists(props) {
-    const [ artistsList, setArtists ] = useState([]);
+    const [ searchResults, setSearchResults ] = useState([]);
     const [ selectedArtist, setSelectedArtist ] = useState('');
+    const [ selectedArtistId, setSelectedArtistId ] = useState('');
+
     const [ error, setError ] = useState('');
 
-    const [ artistSearch, setArtistSearch ] = useState('');
+    const [ searchValue, setSearchValue ] = useState('');
     const [ searchError, setSearchError ] = useState('');
 
-    const [ results, setResults ] = useState('');
-
     const searchArtist = (artist) => {
-        fetch(`/api/artist/${artist}`)
+        fetch(`/api/artistsearch/${artist}`)
             .then(res => res.json())
             .then(res => {
                 console.log('res from artist search', res);
-                // setArtists(res);
+                setSearchResults(res);
             });
     }
 
     const handleSearchChange = (event) => {
-        setArtistSearch(event.target.value);
+        setSearchValue(event.target.value);
     };
     
     const handleSearch = (event) => {
@@ -35,8 +35,8 @@ export default function Artists(props) {
         if (searchError) {
             setError('');
         }
-        if (artistSearch.trim() !== '') {
-            searchArtist(artistSearch);
+        if (searchValue.trim() !== '') {
+            searchArtist(searchValue);
         } else {
             setSearchError('Please enter a valid search!');
         }
@@ -47,9 +47,9 @@ export default function Artists(props) {
         if (selectedArtist !== '') {
             setError('Unable to select more than artist!');
         } else {
-            setSelectedArtist(null);
-            setArtists('');
-            setArtistSearch('');
+            setSelectedArtist(event.target.textContent);
+            setSearchResults([]);
+            setSearchValue('');
         }
     };
 
@@ -79,24 +79,12 @@ export default function Artists(props) {
                         handleChange={handleSearchChange}
                         handleSearch={handleSearch}
                         searchText="Search for an artist"
-                        search={artistSearch}
+                        search={searchValue}
                         error={searchError}
                     />
-                    { artistsList && <SearchResults itemList={artistsList} onClick={makeSelection} /> }
+                    { searchResults && <SearchResultArtist itemList={searchResults} onClick={makeSelection} /> }
                 </Col>
             </Row>
-            {/* <Button onClick={showOnMap}>
-                Display results!
-            </Button> */}
-            {/* <Link to={{ pathname: '/map', search: stringify({genres: {
-                    genre1: selectedGenres[0],
-                    genre2: selectedGenres[1],
-                    genre3: selectedGenres[2]
-                }}) 
-            }}>Show results on a map!</Link> */}
-
-            {/* { results && <Results />} */}
-
         </Container>
     );
 }
