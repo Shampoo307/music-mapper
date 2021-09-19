@@ -9,38 +9,15 @@ import Selected from '../components/Selected.jsx';
 
 
 export default function Genres(props) {
-    const [ genresList, setGenresList ] = useState([]);
+    const [ searchResults, setSearchResults ] = useState([]);
     const [ selectedGenres, setSelectedGenres ] = useState([]);
     const [ error, setError ] = useState('');
 
-    const [ genreSearch, setGenreSearch ] = useState('');
+    const [ searchValue, setSearchValue ] = useState('');
     const [ searchError, setSearchError ] = useState('');
 
-    const [ results, setResults ] = useState([]);
-
-    const [ mapQuery, setMapQuery ] = useState('');
-
-    const Results = () => {
-        const divs = results.map(item => {
-            return (
-                <li>
-                    <Row>
-                        <p>Artist Name: {item.name}</p>
-                        <p>AREA: {item.area.name}</p>
-                        <p>BEGIN AREA: {item["begin-area"]?.name ?? item?.area?.name ?? "" } </p>
-                    </Row>
-                </li>
-            );
-        })
-        return (
-            <ul>
-                {divs}
-            </ul>
-        )
-    }
-
     const handleSearchChange = (event) => {
-        setGenreSearch(event.target.value);
+        setSearchValue(event.target.value);
     };
     
     const handleSearch = (event) => {
@@ -48,8 +25,8 @@ export default function Genres(props) {
         if (searchError) {
             setError('');
         }
-        if (genreSearch.trim() !== '') {
-            searchGenre(genreSearch);
+        if (searchValue.trim() !== '') {
+            searchGenre(searchValue);
         } else {
             setSearchError('Please enter a valid search!');
         }
@@ -62,7 +39,7 @@ export default function Genres(props) {
         fetch(`/api/genre/${genre}`)
             .then(res => res.json())
             .then(res => {
-                setGenresList(res);
+                setSearchResults(res);
             });
     };
 
@@ -74,8 +51,8 @@ export default function Genres(props) {
             setError('Cannot select the same genre twice');
         } else {
             setSelectedGenres([...selectedGenres, event.target.textContent]);
-            setGenresList([]);
-            setGenreSearch('');
+            setSearchResults([]);
+            setSearchValue('');
         }
     };
 
@@ -85,31 +62,25 @@ export default function Genres(props) {
         setSelectedGenres(updatedSelection);
     };
 
-    const displayResults = () => {
-        if (selectedGenres.length !== 3) {
-            setError('Please select three genres!');
-        } else {
-            const queryString = selectedGenres.join('&&');
-            fetch(`/api/genrelist/${queryString}`)
-                .then(res => res.json())
-                .then(res => {
-                    const artists = res;
-                    console.log('the artists', artists);
-                    setResults(artists);
-                });
-        }
-    };
-
-    const showOnMap = () => {
-        // const queryParam = 
-        // dispac
-    };
+    const MapLink = () => {
+        return (
+            <Button>
+                <Link to={{ pathname: '/map', search: stringify({genres: {
+                    genre1: selectedGenres[0],
+                    genre2: selectedGenres[1],
+                    genre3: selectedGenres[2]
+                    }}) 
+                }}>Show results on a map!</Link>
+            </Button>
+        )
+    }
 
     return (
         <Container>
             <Row>
                 <Col>
                     <Selected selection={selectedGenres} onClose={removeSelection} />
+                    { selectedGenres.length === 3 && <MapLink />}
                 </Col>
             </Row>
             <Row>
@@ -119,24 +90,12 @@ export default function Genres(props) {
                         handleChange={handleSearchChange}
                         handleSearch={handleSearch}
                         searchText="Search for a genre"
-                        search={genreSearch}
+                        search={searchValue}
                         error={searchError}
                     />
-                    { genresList && <SearchResults itemList={genresList} onClick={makeSelection} /> }
+                    { searchResults && <SearchResults itemList={searchResults} onClick={makeSelection} /> }
                 </Col>
             </Row>
-            {/* <Button onClick={showOnMap}>
-                Display results!
-            </Button> */}
-            <Link to={{ pathname: '/map', search: stringify({genres: {
-                    genre1: selectedGenres[0],
-                    genre2: selectedGenres[1],
-                    genre3: selectedGenres[2]
-                }}) 
-            }}>Show results on a map!</Link>
-
-            { results && <Results />}
-
         </Container>
     );  
 }
