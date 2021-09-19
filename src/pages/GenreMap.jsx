@@ -7,8 +7,6 @@ import { parse } from 'qs';
 
 const ArtistInfo = (props) => {
     const artist = props.artist;
-    // console.log('ARTIST INFO PROPS', props);
-    console.log('ARTIST PROPS ARTIST', artist);
     return (
         <div>
             <h2>{artist.info.name}</h2>
@@ -31,7 +29,7 @@ const ArtistInfo = (props) => {
 function MapContainer() {
     const [ markers, setMarkers ] = useState([]);
     const [ activeMarker, setActiveMarker ] = useState(null);
-    const [ results, setResults ] = useState([]);
+    // const [ results, setResults ] = useState([]);
 
     const params = parse(new URLSearchParams(useLocation()).toString()).search;
     const separatedParams =  params.replace('?', '&').split('&genres%5B');
@@ -42,12 +40,11 @@ function MapContainer() {
         // retrieve artist info
         fetch(`/api/genrelist/${queryString}`)
         .then(res => res.json())
-        .then(res => {
-            const artists = res;
-            console.log('artists', artists);
-            setResults(artists);
-            return artists;
-        })
+        // .then(res => {
+        //     const artists = res;
+        //     // setResults(artists);
+        //     return artists;
+        // })
         // Make markers from artist results
         .then((res) => {
             const allArtists = res;
@@ -71,9 +68,7 @@ function MapContainer() {
                                 lifespan: artist?.musicbrainz['life-span'],
                             }
                             return {
-                                // id: index,
                                 name: artist.name,
-                                // position: artist.latlng,
                                 info: info
                             };
                     });
@@ -156,8 +151,7 @@ function MapContainer() {
     )
 }
 
-
-export default function Map(props) {
+export default function GenreMap(props) {
     return (
         <main className="form">
             <div>
