@@ -37,6 +37,12 @@
   }
 }
 
+
+
+
+
+
+
 .selections {
   margin: 20px auto;
   width: 60%;
@@ -44,4 +50,57 @@
 
 .form-view-button {
   margin: 10px;
+}
+
+.form-header, .form-intro {
+  padding-top: 50px;
+  padding-bottom: 30px;
+}
+
+/* body {
+  padding: 50px;
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+} */
+
+a {
+  color: #00B7FF;
+}
+
+.artists-list {
+  list-style: none;
+}
+
+.list-group-item li {
+  /* float: left; */
+  display: flex;
+}
+
+.list-group-item p {
+  display: inline-block;
+  font-size: 1.2rem;
+  font-weight: bolder;
+  margin-left: 24px;
+}
+
+.list-group-item img {
+  display: inline-block;
+  /* float: left; */
+  /* margin-right: 10px; */
+  max-width: 56px;
+  max-height: 56px;
+  object-fit: contain;
+  align-self: center;
+}
+
+.artist-with-placeholder {
+  padding-top: 18px;
+}
+
+.image-placeholder {
+  /* min-width: 56px; */
+  padding-left: 24px;
+  max-height: 32px;
+  min-height: 32px;
+  margin-bottom: 0;
+  align-self: center;
 }
