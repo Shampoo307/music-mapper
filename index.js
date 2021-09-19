@@ -102,7 +102,6 @@ app.get('/api/genrelist/:genres', async (req, res) => {
 });
 
 function retrieveLatLong(address) {
-    console.log('address', address);
     const maps_key = process.env.MAPS_KEY;
     const getOptions = {
         method: 'GET',
@@ -121,7 +120,6 @@ function retrieveLatLong(address) {
 }
 
 function searchArtistInfo(artist) {
-    const ARTISTNAME = artist;
     const getOptions = {
         method: 'GET',
         headers: { 
@@ -133,11 +131,6 @@ function searchArtistInfo(artist) {
     }
     return axios(getOptions)
         .then((res) => {
-            if (ARTISTNAME === 'Frédéric Chopin') {
-                console.log('NAME IS CHOPIN???', ARTISTNAME);
-                console.log('URL', getOptions.url);
-                console.log('CHOPIN RESULTS', res.data.artists);
-            }
             const highestScore = Math.max.apply(Math, res.data.artists.map(artist => {return artist.score}));
             const artist = res.data.artists.filter(artist => artist.score === highestScore);
             return artist[0];
@@ -177,8 +170,7 @@ function getGenreArtists(query) {
     });
 }
 
-app.get('/artist/:artistname', function(req, res) {
-    console.log('req aparms', req.params);
+app.get('/api/artistsearch/:artistname', function(req, res) {
     const artistname = req.params.artistname;
     const query = `q=${artistname}&type=artist`;
     
@@ -196,9 +188,7 @@ app.get('/artist/:artistname', function(req, res) {
         }
         axios(getOptions)
             .then((response) => {
-                // displaySearch(response.data);
                 const artists = response.data.artists.items;
-                console.log('artists', artists);
                 artists.forEach(item => console.log('images', item.images[0]));
                 const artistInfo = artists.map(artist => {
                     return {
@@ -207,7 +197,49 @@ app.get('/artist/:artistname', function(req, res) {
                         id: artist.id
                     }
                 });
-                res.send(artistsInfo);
+                res.send(artistInfo);
+            })
+            .catch((err) => {
+                if (err.repsonse) {
+                    console.log('Error in Search Response');
+                } else if (err.request) {
+                    console.log('Error in Search Request');
+                } else {
+                    console.log('Error retrieving search result');
+                }
+            });
+    });
+
+});
+
+app.get('/api/artists/:artistname', function(req, res) {
+    const artistname = req.params.artistname;
+    const query = `q=${artistname}&type=artist`;
+    
+    const getAuth = getAccessToken();
+
+    getAuth.then((token) => {
+        const getOptions = {
+            method: 'GET',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': 'Bearer ' + token
+            },
+            url: 'https://api.spotify.com/v1/artists/' + query + '/related-artists',
+        }
+        axios(getOptions)
+            .then((response) => {
+                const artists = response.data.artists.items;
+                artists.forEach(item => console.log('images', item.images[0]));
+                const artistInfo = artists.map(artist => {
+                    return {
+                        name: artist.name,
+                        image: artist?.images[0]?.url ?? "",
+                        id: artist.id
+                    }
+                });
+                res.send(artistInfo);
             })
             .catch((err) => {
                 if (err.repsonse) {
@@ -247,13 +279,6 @@ async function getAccessToken() {
                 }
             });
 }
-
-
-
-
-
-
-
 
 
 app.use((req, res) => {
