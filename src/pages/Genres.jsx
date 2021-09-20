@@ -65,7 +65,7 @@ export default function Genres(props) {
     const MapLink = () => {
         return (
             <Button>
-                <Link to={{ pathname: '/map', search: stringify({genres: {
+                <Link to={{ pathname: '/map/genre', search: stringify({genres: {
                     genre1: selectedGenres[0],
                     genre2: selectedGenres[1],
                     genre3: selectedGenres[2]
