@@ -1,6 +1,7 @@
 import  React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Container, Row, Col, Alert, Button } from 'react-bootstrap';
+import { stringify } from 'qs';
 
 import Search from '../components/Search.jsx';
 import SearchResultArtist from '../components/SearchResultArtist.jsx';
@@ -21,7 +22,7 @@ export default function Artists(props) {
         fetch(`/api/artistsearch/${artist}`)
             .then(res => res.json())
             .then(res => {
-                console.log('res from artist search', res);
+                // console.log('res from artist search', res);
                 setSearchResults(res);
             });
     }
@@ -42,12 +43,15 @@ export default function Artists(props) {
         }
     }
 
-    const makeSelection = (event) => {
-        event.preventDefault();
+    const makeSelection = (id, name) => {
+        // event.preventDefault();
+        // console.log('THE THINGPO', );
+        // console.log('THE THINGP2O', event.target.value);
         if (selectedArtist !== '') {
             setError('Unable to select more than artist!');
-        } else {
-            setSelectedArtist(event.target.textContent);
+        } else {            
+            setSelectedArtist(name);
+            setSelectedArtistId(id);
             setSearchResults([]);
             setSearchValue('');
         }
@@ -55,7 +59,22 @@ export default function Artists(props) {
 
     const removeSelection = (event) => {
         setSelectedArtist('');
+        setSelectedArtistId('');
     };
+
+    const MapLink = () => {
+        return (
+            <Button>
+                <Link 
+                to={{
+                    pathname: '/map/artist', 
+                    search: stringify({artist: selectedArtistId}) 
+                }}>
+                        Show results on a map!
+                </Link>
+            </Button>
+        )
+    }
 
     return (
         <Container>
@@ -67,6 +86,7 @@ export default function Artists(props) {
                                 <Button variant="outline-dark" onClick={removeSelection}>
                                     {selectedArtist}
                                 </Button>
+                                {selectedArtist && <MapLink />}
                             </Col>
                         }
                     </Row>
