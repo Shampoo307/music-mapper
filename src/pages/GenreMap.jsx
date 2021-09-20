@@ -25,11 +25,9 @@ const ArtistInfo = (props) => {
 }
 
 
-
 function MapContainer() {
     const [ markers, setMarkers ] = useState([]);
     const [ activeMarker, setActiveMarker ] = useState(null);
-    // const [ results, setResults ] = useState([]);
 
     const params = parse(new URLSearchParams(useLocation()).toString()).search;
     const separatedParams =  params.replace('?', '&').split('&genres%5B');
@@ -40,11 +38,6 @@ function MapContainer() {
         // retrieve artist info
         fetch(`/api/genrelist/${queryString}`)
         .then(res => res.json())
-        // .then(res => {
-        //     const artists = res;
-        //     // setResults(artists);
-        //     return artists;
-        // })
         // Make markers from artist results
         .then((res) => {
             const allArtists = res;

@@ -29,24 +29,14 @@ const ArtistInfo = (props) => {
 function MapContainer() {
     const [ markers, setMarkers ] = useState([]);
     const [ activeMarker, setActiveMarker ] = useState(null);
-    // const [ results, setResults ] = useState([]);
 
     const params = parse(new URLSearchParams(useLocation()).toString()).search;
     const queryString =  params.replace('?artist=', '');
-    // const genres = separatedParams.map(str => str.slice(10)).filter(str => str !== "");
     
-    // const queryString = genres.join('&&');
     useMemo(() => {
         // retrieve artist info
         fetch(`/api/artists/${queryString}`)
         .then(res => res.json())
-        // .then(res => {
-        //     const artists = res;
-        //     console.log('artists', artists);
-        //     setResults(artists);
-        //     return artists;
-        // })
-        // Make markers from artist results
         .then((res) => {
             const allArtists = res;
             // get distinct list of coords
@@ -69,9 +59,7 @@ function MapContainer() {
                                 lifespan: artist?.musicbrainz['life-span'],
                             }
                             return {
-                                // id: index,
                                 name: artist.name,
-                                // position: artist.latlng,
                                 info: info
                             };
                     });

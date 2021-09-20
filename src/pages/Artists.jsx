@@ -5,7 +5,6 @@ import { stringify } from 'qs';
 
 import Search from '../components/Search.jsx';
 import SearchResultArtist from '../components/SearchResultArtist.jsx';
-import Selected from '../components/Selected.jsx';
 
 
 export default function Artists(props) {
@@ -22,7 +21,6 @@ export default function Artists(props) {
         fetch(`/api/artistsearch/${artist}`)
             .then(res => res.json())
             .then(res => {
-                // console.log('res from artist search', res);
                 setSearchResults(res);
             });
     }
@@ -44,9 +42,6 @@ export default function Artists(props) {
     }
 
     const makeSelection = (id, name) => {
-        // event.preventDefault();
-        // console.log('THE THINGPO', );
-        // console.log('THE THINGP2O', event.target.value);
         if (selectedArtist !== '') {
             setError('Unable to select more than artist!');
         } else {            
