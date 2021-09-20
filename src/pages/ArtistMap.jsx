@@ -31,8 +31,8 @@ function MapContainer() {
     const [ activeMarker, setActiveMarker ] = useState(null);
     // const [ results, setResults ] = useState([]);
 
-    const queryString = parse(new URLSearchParams(useLocation()).toString()).search;
-    // const separatedParams =  params.replace('?', '&').split('&genres%5B');
+    const params = parse(new URLSearchParams(useLocation()).toString()).search;
+    const queryString =  params.replace('?artist=', '');
     // const genres = separatedParams.map(str => str.slice(10)).filter(str => str !== "");
     
     // const queryString = genres.join('&&');
