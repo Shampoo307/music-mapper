@@ -4,10 +4,11 @@ import { ListGroup, Button, Image } from 'react-bootstrap';
 
 
 export default function  SearchResults(props) {
+
     const items = props.itemList.map(item => {
         return (
             <ListGroup.Item>
-                <Button onClick={props.onClick} className="list-group-item list-group-item-action action">
+                <Button onClick={(event) => {event.preventDefault(); props.onClick(item.id, item.name)}} className="list-group-item list-group-item-action action">
                         {
                             item.image
                             ?
