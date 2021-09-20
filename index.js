@@ -189,7 +189,7 @@ app.get('/api/artistsearch/:artistname', function(req, res) {
         axios(getOptions)
             .then((response) => {
                 const artists = response.data.artists.items;
-                artists.forEach(item => console.log('images', item.images[0]));
+                // artists.forEach(item => console.log('images', item.images[0]));
                 const artistInfo = artists.map(artist => {
                     return {
                         name: artist.name,
@@ -212,9 +212,11 @@ app.get('/api/artistsearch/:artistname', function(req, res) {
 
 });
 
-app.get('/api/artists/:artistname', function(req, res) {
-    const artistname = req.params.artistname;
-    const query = `q=${artistname}&type=artist`;
+// Retrieve artists similar to the selected one
+app.get('/api/artists/:artistId', function(req, res) {
+    const artistId= req.params.artistId;
+    console.log('artist id', artistId)
+    // const query = `q=${artistId}&type=artist`;
     
     const getAuth = getAccessToken();
 
@@ -226,20 +228,58 @@ app.get('/api/artists/:artistname', function(req, res) {
                 'Accept': 'application/json',
                 'Authorization': 'Bearer ' + token
             },
-            url: 'https://api.spotify.com/v1/artists/' + query + '/related-artists',
+            url: 'https://api.spotify.com/v1/artists/' + artistId + '/related-artists',
         }
+        // Get similar artists from spotify
         axios(getOptions)
             .then((response) => {
-                const artists = response.data.artists.items;
-                artists.forEach(item => console.log('images', item.images[0]));
-                const artistInfo = artists.map(artist => {
-                    return {
-                        name: artist.name,
-                        image: artist?.images[0]?.url ?? "",
-                        id: artist.id
-                    }
-                });
-                res.send(artistInfo);
+                const artists = response.data.artists;
+                console.log('made spotify')
+                return artists.slice(0, 10);
+            })
+            // Get info from musicbrainz
+            .then(async (artists) => {
+                const artistsInfo = await Promise.all(
+                    artists.map(async (artist) => {
+                        const artistInfo = await searchArtistInfo(artist.name);
+
+                        const beginarea = artistInfo['begin-area']?.name ?? "";
+                        const area = artistInfo?.area?.name ?? "";
+
+                        let location;
+                        if (beginarea === "") {
+                            location = area;
+                        } else if (area !== "") {
+                            location = beginarea + ", " + area;
+                        }
+                        console.log('loication', location);
+                        return {
+                            spotify: artist,
+                            musicbrainz: artistInfo,
+                            location: location
+                        };
+                    })
+                );
+                console.log('made musicbrainz')
+                return artistsInfo;
+            })
+            // Retrieve lat/lng from google geocode api
+            .then(async (artistsInfo) => {
+                const artistsWithLatLongs = await Promise.all(
+                    artistsInfo.map(async (artist) => {
+                        const location = artist.location;
+                        const latlong = 
+                            location
+                            ? await retrieveLatLong(location)
+                            : { lat: 0, lng: 0 };
+                        return {
+                            ...artist,
+                            latlng: latlong
+                        };
+                    })
+                );
+                console.log('made goog;le')
+                res.send(artistsWithLatLongs);
             })
             .catch((err) => {
                 if (err.repsonse) {
