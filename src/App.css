@@ -1,0 +1,106 @@
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+
+
+
+
+
+.selections {
+  margin: 20px auto;
+  width: 60%;
+}
+
+.form-view-button {
+  margin: 10px;
+}
+
+.form-header, .form-intro {
+  padding-top: 50px;
+  padding-bottom: 30px;
+}
+
+/* body {
+  padding: 50px;
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+} */
+
+a {
+  color: #00B7FF;
+}
+
+.artists-list {
+  list-style: none;
+}
+
+.list-group-item li {
+  /* float: left; */
+  display: flex;
+}
+
+.list-group-item p {
+  display: inline-block;
+  font-size: 1.2rem;
+  font-weight: bolder;
+  margin-left: 24px;
+}
+
+.list-group-item img {
+  display: inline-block;
+  /* float: left; */
+  /* margin-right: 10px; */
+  max-width: 56px;
+  max-height: 56px;
+  object-fit: contain;
+  align-self: center;
+}
+
+.artist-with-placeholder {
+  padding-top: 18px;
+}
+
+.image-placeholder {
+  /* min-width: 56px; */
+  padding-left: 24px;
+  max-height: 32px;
+  min-height: 32px;
+  margin-bottom: 0;
+  align-self: center;
+}
